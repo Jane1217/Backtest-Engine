@@ -31,7 +31,7 @@ int main()
     engine.addStrategy("Breakout_Win20", std::make_unique<BreakoutStrategy<20>>(), TimeFrame::MINUTE, 10000.0);
     engine.addStrategy("Spread", std::make_unique<SpreadStrategy>(), TimeFrame::MINUTE, 10000.0);
     
-    engine.runAll(true, true);
+    engine.runAll(true, true);  // Generate CSV for display, but save to temp location
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = end - start;
 

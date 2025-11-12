@@ -87,6 +87,12 @@ function displayResults(data) {
             setTimeout(() => loadChart(strategy), 100);
         }
     }
+    
+    // Initialize Bootstrap tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 }
 
 function createStrategyCard(strategy, result) {
@@ -152,15 +158,26 @@ function createStrategyCard(strategy, result) {
                     </div>
                 ` : ''}
                 
-                <div class="mt-4 d-flex gap-2">
-                    <a href="/api/download/${strategy}/statistics" class="btn btn-sm btn-outline-primary flex-fill">
-                        <i class="bi bi-download me-1"></i>Statistics
-                    </a>
-                    ${result.has_pnl ? `
-                        <a href="/api/download/${strategy}/pnl" class="btn btn-sm btn-outline-primary flex-fill">
-                            <i class="bi bi-download me-1"></i>P&L Data
+                <div class="mt-4">
+                    <div class="d-flex gap-2 mb-2">
+                        <a href="/api/download/${strategy}/statistics" class="btn btn-sm btn-outline-primary flex-fill" 
+                           data-bs-toggle="tooltip" data-bs-placement="top" 
+                           title="Download key performance metrics (Sharpe ratio, max drawdown, volatility, etc.) as CSV">
+                            <i class="bi bi-download me-1"></i>Statistics
                         </a>
-                    ` : ''}
+                        ${result.has_pnl ? `
+                            <a href="/api/download/${strategy}/pnl" class="btn btn-sm btn-outline-primary flex-fill"
+                               data-bs-toggle="tooltip" data-bs-placement="top"
+                               title="Download portfolio value over time for charting and analysis">
+                                <i class="bi bi-download me-1"></i>P&L Data
+                            </a>
+                        ` : ''}
+                    </div>
+                    <small class="text-muted d-block text-center">
+                        <i class="bi bi-info-circle me-1"></i>
+                        <strong>Statistics:</strong> Key metrics (Sharpe, drawdown, volatility) | 
+                        <strong>P&L Data:</strong> Portfolio value history
+                    </small>
                 </div>
             </div>
         </div>

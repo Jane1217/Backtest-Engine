@@ -33,14 +33,22 @@ def run_backtest():
         # 确保结果目录存在
         RESULTS_DIR.mkdir(exist_ok=True)
         
-        # 运行 Docker 容器执行回测
+        # Create temporary directory for this backtest run
+        import tempfile
+        import shutil
+        temp_dir = tempfile.mkdtemp(prefix='backtest_')
+        temp_results_dir = Path(temp_dir) / 'results'
+        temp_results_dir.mkdir(exist_ok=True)
+        
+        # Run Docker container to execute backtest
+        # CSV files will be generated in temp_results directory, not in project results/
         cmd = [
             'docker', 'run', '--rm',
-            '-v', f'{RESULTS_DIR.absolute()}:/app/results',
+            '-v', f'{temp_results_dir.absolute()}:/app/temp_results',
             '-w', '/app',
             'backtest-engine',
             'sh', '-c',
-            f'mkdir -p results && ./build/BacktestEngine && mv *.csv results/ 2>/dev/null || true'
+            './build/BacktestEngine && (mv *.csv temp_results/ 2>/dev/null || true)'
         ]
         
         start_time = time.time()
@@ -58,11 +66,11 @@ def run_backtest():
                 'error': result.stderr
             }), 500
         
-        # 读取结果
+        # Read results from CSV files in temp directory
         results = {}
         for strategy in strategies:
-            stats_file = RESULTS_DIR / f'{strategy}_statistics.csv'
-            pnl_file = RESULTS_DIR / f'{strategy}_pnl.csv'
+            stats_file = temp_results_dir / f'{strategy}_statistics.csv'
+            pnl_file = temp_results_dir / f'{strategy}_pnl.csv'
             
             stats = {}
             if stats_file.exists():
@@ -71,8 +79,8 @@ def run_backtest():
                     for row in reader:
                         stats[row['Metric']] = float(row['Value'])
             
-            # 从 PnL 文件获取最终盈亏
-            final_pnl = 10000.0  # 默认值
+            # Get final PnL from PnL file
+            final_pnl = 10000.0  # Default
             if pnl_file.exists():
                 with open(pnl_file, 'r') as f:
                     reader = csv.DictReader(f)
@@ -86,11 +94,22 @@ def run_backtest():
                 'has_pnl': pnl_file.exists()
             }
         
+        # Store temp directory path for this session
+        # Files will be served from temp directory, not saved to results/
+        import hashlib
+        session_key = hashlib.md5(f"{time.time()}{strategies}".encode()).hexdigest()
+        app.temp_dirs = getattr(app, 'temp_dirs', {})
+        app.temp_dirs[session_key] = temp_dir
+        app.strategy_sessions = getattr(app, 'strategy_sessions', {})
+        for strategy in strategies:
+            app.strategy_sessions[strategy] = session_key
+        
         return jsonify({
             'success': True,
             'results': results,
             'elapsed_time': elapsed_time,
-            'output': result.stdout
+            'output': result.stdout,
+            'session_key': session_key
         })
         
     except subprocess.TimeoutExpired:
@@ -106,11 +125,18 @@ def run_backtest():
 
 @app.route('/api/results/<strategy>/pnl')
 def get_pnl_data(strategy):
-    """获取盈亏数据（用于图表）"""
+    """Get P&L data for charting"""
     try:
-        pnl_file = RESULTS_DIR / f'{strategy}_pnl.csv'
+        # Get from temp directory (not from results/)
+        session_key = app.strategy_sessions.get(strategy)
+        if session_key and session_key in app.temp_dirs:
+            temp_dir = app.temp_dirs[session_key]
+            pnl_file = Path(temp_dir) / 'results' / f'{strategy}_pnl.csv'
+        else:
+            return jsonify({'error': 'Session not found. Please run backtest first.'}), 404
+        
         if not pnl_file.exists():
-            return jsonify({'error': '文件不存在'}), 404
+            return jsonify({'error': 'File not found'}), 404
         
         data = {'index': [], 'pnl': []}
         with open(pnl_file, 'r') as f:
@@ -143,18 +169,25 @@ def get_statistics(strategy):
 
 @app.route('/api/download/<strategy>/<file_type>')
 def download_file(strategy, file_type):
-    """下载 CSV 文件"""
+    """Download CSV file from temp directory"""
     try:
         if file_type == 'pnl':
             filename = f'{strategy}_pnl.csv'
         elif file_type == 'statistics':
             filename = f'{strategy}_statistics.csv'
         else:
-            return jsonify({'error': '无效的文件类型'}), 400
+            return jsonify({'error': 'Invalid file type'}), 400
         
-        file_path = RESULTS_DIR / filename
+        # Get file from temp directory (not from results/)
+        session_key = app.strategy_sessions.get(strategy)
+        if not session_key or session_key not in app.temp_dirs:
+            return jsonify({'error': 'Session not found. Please run backtest first.'}), 404
+        
+        temp_dir = app.temp_dirs[session_key]
+        file_path = Path(temp_dir) / 'results' / filename
+        
         if not file_path.exists():
-            return jsonify({'error': '文件不存在'}), 404
+            return jsonify({'error': 'File not found. Please run backtest first.'}), 404
         
         return send_file(file_path, as_attachment=True, download_name=filename)
     except Exception as e:
