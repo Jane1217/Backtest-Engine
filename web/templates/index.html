@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backtest Engine - Trading Strategy Backtesting</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center" href="#">
+                <i class="bi bi-graph-up-arrow me-2 fs-4"></i>
+                <span class="fw-bold">Backtest Engine</span>
+            </a>
+            <span class="navbar-text text-light">
+                High-Performance Trading Strategy Backtesting
+            </span>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <!-- Header -->
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold mb-3">Trading Strategy Backtesting</h1>
+            <p class="lead text-muted">Test and evaluate multiple trading strategies with simulated market data</p>
+        </div>
+
+        <!-- Configuration Panel -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-gradient-primary text-white py-3">
+                <h5 class="mb-0 d-flex align-items-center">
+                    <i class="bi bi-sliders me-2"></i>
+                    Backtest Configuration
+                </h5>
+            </div>
+            <div class="card-body p-4">
+                <form id="backtestForm">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label for="num_ticks" class="form-label fw-semibold">
+                                <i class="bi bi-bar-chart me-1"></i> Number of Ticks
+                            </label>
+                            <input type="number" class="form-control form-control-lg" id="num_ticks" value="1000" min="100" max="10000">
+                            <small class="text-muted">Number of price data points to generate</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="initial_capital" class="form-label fw-semibold">
+                                <i class="bi bi-currency-dollar me-1"></i> Initial Capital
+                            </label>
+                            <input type="number" class="form-control form-control-lg" id="initial_capital" value="10000" min="1000" step="1000">
+                            <small class="text-muted">Starting capital for each strategy</small>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-list-check me-1"></i> Select Strategies
+                            </label>
+                            <div class="d-flex flex-column gap-2">
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="strategy_mean" value="Mean_Reversion" checked>
+                                    <label class="form-check-label" for="strategy_mean">
+                                        Mean Reversion
+                                        <button type="button" class="btn btn-sm btn-link p-0 ms-2" data-bs-toggle="collapse" data-bs-target="#meanReversionInfo">
+                                            <i class="bi bi-info-circle text-primary"></i>
+                                        </button>
+                                    </label>
+                                </div>
+                                <div class="collapse ms-4 mb-2" id="meanReversionInfo">
+                                    <div class="card card-body bg-light border-0 small">
+                                        <strong>Strategy Logic:</strong> Buys when price drops 0.5% and sells when price rises 0.5%. 
+                                        Assumes prices will revert to their mean value. Best for ranging markets.
+                                    </div>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="strategy_breakout" value="Breakout_Win20" checked>
+                                    <label class="form-check-label" for="strategy_breakout">
+                                        Breakout Strategy
+                                        <button type="button" class="btn btn-sm btn-link p-0 ms-2" data-bs-toggle="collapse" data-bs-target="#breakoutInfo">
+                                            <i class="bi bi-info-circle text-primary"></i>
+                                        </button>
+                                    </label>
+                                </div>
+                                <div class="collapse ms-4 mb-2" id="breakoutInfo">
+                                    <div class="card card-body bg-light border-0 small">
+                                        <strong>Strategy Logic:</strong> Buys when price breaks above the 20-tick high, sells when price breaks below the 20-tick low. 
+                                        Assumes momentum will continue after breakout. Best for trending markets.
+                                    </div>
+                                </div>
+
+                                <div class="form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" id="strategy_spread" value="Spread" checked>
+                                    <label class="form-check-label" for="strategy_spread">
+                                        Spread Strategy
+                                        <button type="button" class="btn btn-sm btn-link p-0 ms-2" data-bs-toggle="collapse" data-bs-target="#spreadInfo">
+                                            <i class="bi bi-info-circle text-primary"></i>
+                                        </button>
+                                    </label>
+                                </div>
+                                <div class="collapse ms-4 mb-2" id="spreadInfo">
+                                    <div class="card card-body bg-light border-0 small">
+                                        <strong>Strategy Logic:</strong> Places limit orders to buy at bid price and sell at ask price, 
+                                        profiting from the bid-ask spread. Best for high-frequency trading scenarios.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-4 text-center">
+                        <button type="submit" class="btn btn-primary btn-lg px-5 py-3 shadow-sm" id="runBtn">
+                            <i class="bi bi-play-fill me-2"></i>Run Backtest
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <h5 class="text-muted">Running backtest, please wait...</h5>
+            <p class="text-muted small">This may take a few seconds</p>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" style="display: none;">
+            <div class="card shadow-sm mb-4 border-0 bg-success bg-opacity-10">
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div>
+                            <h5 class="mb-1 text-success">
+                                <i class="bi bi-check-circle-fill me-2"></i>Backtest Completed Successfully
+                            </h5>
+                            <p class="text-muted mb-0">Execution time: <strong id="elapsedTime"></strong> seconds</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Strategy Results Cards -->
+            <div id="strategyResults" class="row g-4"></div>
+        </div>
+
+        <!-- Error Alert -->
+        <div id="error" class="alert alert-danger alert-dismissible fade show shadow-sm" style="display: none;" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            <span id="errorMessage"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    </div>
+
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center text-muted">
+            <small>Backtest Engine - Powered by C++ & Docker</small>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

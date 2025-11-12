@@ -1,30 +1,56 @@
-# Build directory
+# Build directories
 build/
-CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-
-# VS Code Config and output files
-.vscode/*
-*.csv
-
-# Compiled objects
+cmake-build-*/
 *.o
-*.obj
-*.lo
-*.la
-*.al
-*.libs
-
-# Binary executables
-*.exe
-*.out
-*.app
+*.a
 *.so
-*.dll
 *.dylib
 
-# Docker artifacts
-*.container
-*.tar
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+
+# Results and output
+results/
+*.csv
+*.log
+
+# Documentation (keep local but don't commit)
+docs/
+*.md
+!README.md
+!web/README.md
+
+# Web static files (if needed)
+web/static/uploads/
+
+# Docker
+.dockerignore
+
+# Temporary files
+*.tmp
+*.bak
+*.swp
