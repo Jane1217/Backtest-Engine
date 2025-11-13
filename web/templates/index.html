@@ -44,14 +44,14 @@
                             <label for="num_ticks" class="form-label fw-semibold">
                                 <i class="bi bi-bar-chart me-1"></i> Number of Ticks
                             </label>
-                            <input type="number" class="form-control form-control-lg" id="num_ticks" value="1000" min="100" max="10000">
+                            <input type="number" class="form-control form-control-lg" id="num_ticks" value="1000" min="100" max="10000" title="Must be between 100 and 10000">
                             <small class="text-muted">Number of price data points to generate</small>
                         </div>
                         <div class="col-md-4">
                             <label for="initial_capital" class="form-label fw-semibold">
                                 <i class="bi bi-currency-dollar me-1"></i> Initial Capital
                             </label>
-                            <input type="number" class="form-control form-control-lg" id="initial_capital" value="10000" min="1000" step="1000">
+                            <input type="number" class="form-control form-control-lg" id="initial_capital" value="10000" min="1000" step="1000" title="Must be greater than or equal to 1000">
                             <small class="text-muted">Starting capital for each strategy</small>
                         </div>
                         <div class="col-md-4">

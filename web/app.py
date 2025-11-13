@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backtest Engine Web Interface
-简单的 Flask 后端，提供 Web API
+Simple Flask backend providing Web API
 """
 
 from flask import Flask, render_template, request, jsonify, send_file
@@ -18,19 +18,19 @@ RESULTS_DIR = Path(__file__).parent.parent / "results"
 
 @app.route('/')
 def index():
-    """主页面"""
+    """Main page"""
     return render_template('index.html')
 
 @app.route('/api/run', methods=['POST'])
 def run_backtest():
-    """运行回测"""
+    """Run backtest"""
     try:
         data = request.json
         num_ticks = int(data.get('num_ticks', 1000))
         initial_capital = float(data.get('initial_capital', 10000))
         strategies = data.get('strategies', ['Mean_Reversion', 'Breakout_Win20', 'Spread'])
         
-        # 确保结果目录存在
+        # Ensure results directory exists
         RESULTS_DIR.mkdir(exist_ok=True)
         
         # Create temporary directory for this backtest run
@@ -119,7 +119,7 @@ def run_backtest():
     except subprocess.TimeoutExpired:
         return jsonify({
             'success': False,
-            'error': '回测超时'
+            'error': 'Backtest timeout'
         }), 500
     except Exception as e:
         return jsonify({
@@ -155,11 +155,11 @@ def get_pnl_data(strategy):
 
 @app.route('/api/results/<strategy>/statistics')
 def get_statistics(strategy):
-    """获取统计指标"""
+    """Get statistics"""
     try:
         stats_file = RESULTS_DIR / f'{strategy}_statistics.csv'
         if not stats_file.exists():
-            return jsonify({'error': '文件不存在'}), 404
+            return jsonify({'error': 'File not found'}), 404
         
         stats = {}
         with open(stats_file, 'r') as f:
