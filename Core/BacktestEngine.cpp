@@ -70,13 +70,12 @@ void BacktestEngine::addStrategy(const std::string& name, std::unique_ptr<Strate
  *    - Compute final statistics
  * 
  * 3. Reporting phase:
- *    - Print results if verbose mode
  *    - Export to CSV if requested
  * 
  * All strategies run in parallel, so execution time is roughly the time
  * of the slowest strategy, not the sum of all strategies.
  */
-void BacktestEngine::runAll(const bool saveToCSV, const bool verbose) {
+void BacktestEngine::runAll(const bool saveToCSV) {
 	// Setup and launch each strategy in its own thread
 	for (auto& context : strategies) {
 		// Give the strategy access to its OrderManager so it can submit orders
@@ -128,15 +127,6 @@ void BacktestEngine::runAll(const bool saveToCSV, const bool verbose) {
 			
 			// Compute final statistics (Sharpe ratio, max drawdown, etc.)
 			auto stats = ctx->statistics.computeStats();
-
-			// Print results if verbose mode is enabled
-			if (verbose) {
-				std::lock_guard<std::mutex> lock(globalPrintMutex);
-				std::cout << "[" << ctx->name << "] Final PnL: " << ctx->orderManager.getPnL(0.0) << "\n";
-				for (const auto& [name, value] : stats) {
-					std::cout << " - " + name << ": " << value << "\n";
-				}
-			}
 
 			// Export results to CSV files if requested
 			if (saveToCSV) {

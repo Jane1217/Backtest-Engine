@@ -3,9 +3,7 @@
 #include <vector>
 #include <functional>
 #include <string>
-#include <iostream>
 #include <thread>
-#include <mutex>
 
 #include "Strategy.h"
 #include "QuoteStrategy.h"
@@ -42,13 +40,6 @@ struct StrategyContext {
 	 */
 	StrategyContext(const std::string& name, std::unique_ptr<Strategy> strategy, const TimeFrame& tf, const double initialCash);
 };
-
-/**
- * @brief Global mutex for thread-safe console output
- * 
- * Declared here, defined in BacktestEngine_Project.cpp
- */
-extern std::mutex globalPrintMutex;
 
 /**
  * @brief Core backtesting engine that orchestrates strategy execution
@@ -121,14 +112,13 @@ public:
 	 * 2. Registers statistics collection
 	 * 3. Spawns a worker thread
 	 * 4. In the thread: processes all ticks, calls strategy callbacks
-	 * 5. Collects and reports statistics
+	 * 5. Collects and computes statistics
 	 * 6. Optionally exports results to CSV files
 	 * 
 	 * All strategies run in parallel threads, so they execute simultaneously
 	 * on the same market data for fair comparison.
 	 * 
 	 * @param saveToCSV If true, exports PnL and statistics to CSV files
-	 * @param verbose If true, prints detailed progress and results to console
 	 */
-	void runAll(const bool saveToCSV = false, const bool verbose = false);
+	void runAll(const bool saveToCSV = false);
 };

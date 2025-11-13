@@ -1,11 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include <mutex>
 #include "QuoteStrategy.h"
 #include "OrderManager.h"
-
-extern std::mutex globalPrintMutex;
 
 /**
  * @brief Market making strategy that profits from bid-ask spread

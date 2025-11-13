@@ -1,11 +1,7 @@
 #pragma once
 
-#include <iostream>
-#include <mutex>
 #include "Strategy.h"
 #include "OrderManager.h"
-
-extern std::mutex globalPrintMutex;
 
 /**
  * @brief Simple mean reversion trading strategy

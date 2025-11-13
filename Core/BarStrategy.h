@@ -1,13 +1,8 @@
 #pragma once
 
-#include <iostream>
-#include <mutex>
-
 #include "Strategy.h"
 #include "BarAggregator.h"
 #include "OrderManager.h"
-
-extern std::mutex globalPrintMutex;
 
 /**
  * @brief Base class for strategies that operate on bars (OHLCV) instead of individual ticks

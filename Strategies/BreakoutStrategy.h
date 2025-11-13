@@ -1,12 +1,8 @@
 #pragma once
 
-#include <iostream>
 #include <algorithm>
-#include <mutex>
 #include <deque>
 #include "Strategy.h"
-
-extern std::mutex globalPrintMutex;
 
 /**
  * @brief Breakout trading strategy (template class)
@@ -92,12 +88,6 @@ public:
 				// Record entry price and mark that we're in a position
 				entryPrice = tick.price;
 				inPosition = true;
-				
-				// Console output (disabled when running from web interface)
-				{
-					std::lock_guard<std::mutex> lock(globalPrintMutex);
-					std::cout << "[BREAKOUT BUY] @ " << tick.price << "\n";
-				}
 			}
 			// SELL SIGNAL: Price breaks below the window low (downward breakout)
 			// Only sell if we're in a position
@@ -114,12 +104,6 @@ public:
 				
 				// Mark that we're no longer in a position
 				inPosition = false;
-				
-				// Console output (disabled when running from web interface)
-				{
-					std::lock_guard<std::mutex> lock(globalPrintMutex);
-					std::cout << "[BREAKOUT SELL] @ " << tick.price << "\n";
-				}
 			}
 		}
 

@@ -54,12 +54,6 @@ void SpreadStrategy::onTick(const QuoteTick& tick) {
 			.price = bidQuote               // Limit price (below current bid)
 		};
 		orderManager->submit(buy);
-
-		// Console output (disabled when running from web interface)
-		{
-			std::lock_guard<std::mutex> lock(globalPrintMutex);
-			std::cout << "[SPREAD] Placing LIMIT BUY @ " << bidQuote << "\n";
-		}
 	}
 
 	// Place LIMIT SELL order if we're not too short already
@@ -73,16 +67,5 @@ void SpreadStrategy::onTick(const QuoteTick& tick) {
 			.price = askQuote                // Limit price (above current ask)
 		};
 		orderManager->submit(sell);
-
-		// Console output (disabled when running from web interface)
-		{
-			std::lock_guard<std::mutex> lock(globalPrintMutex);
-			std::cout << "[SPREAD] Placing LIMIT SELL @ " << askQuote << "\n";
-		}
 	}
-
-	// Debug output (commented out, but can be enabled for debugging)
-	/*std::lock_guard<std::mutex> lock(globalPrintMutex);
-	std::cout << "[SPREAD] Pos : " << position << " | Spread : " << spread 
-	          << " | BidQ " << bidQuote << " | AskQ " << askQuote << "\n";*/
 }

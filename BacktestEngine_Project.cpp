@@ -1,6 +1,4 @@
 #include <vector>
-#include <mutex>
-#include <chrono>
 #include <iostream>
 #include <cstdlib>
 #include <cstring>
@@ -13,15 +11,6 @@
 #include "MeanReversionSimpleStrategy.h"
 #include "BreakoutStrategy.h"
 #include "SpreadStrategy.h"
-
-/**
- * @brief Global mutex for thread-safe console output
- * 
- * Since strategies can run in parallel threads, we need to synchronize
- * console output to prevent garbled text when multiple threads print simultaneously.
- * Note: Console output is now disabled when running from web interface.
- */
-std::mutex globalPrintMutex;
 
 /**
  * @brief Parses command line arguments or environment variables
@@ -105,12 +94,6 @@ int main(int argc, char* argv[])
     if (!parseArguments(argc, argv, numTicks, initialCapital)) {
         return 1;
     }
-    
-    // Check if running from web interface (disable verbose output)
-    bool isWebInterface = std::getenv("WEB_INTERFACE") != nullptr;
-    
-    // Start timing to measure total execution time
-    auto start = std::chrono::high_resolution_clock::now();
 
     // ========================================================================
     // STEP 1: Generate synthetic market data (ticks)
@@ -168,25 +151,8 @@ int main(int argc, char* argv[])
     // ========================================================================
     
     // Run all strategies in parallel threads
-    // Parameters:
-    //   - saveToCSV = true: Generate CSV files with results
-    //   - verbose = !isWebInterface: Only print to console if not running from web
-    engine.runAll(true, !isWebInterface);
+    // Parameter: saveToCSV = true (generate CSV files with results)
+    engine.runAll(true);
     
-    // ========================================================================
-    // STEP 5: Report execution time (only if not running from web interface)
-    // ========================================================================
-    
-    if (!isWebInterface) {
-        auto end = std::chrono::high_resolution_clock::now();
-        std::chrono::duration<double> elapsed = end - start;
-
-        // Thread-safe output of total execution time
-        {
-            std::unique_lock<std::mutex> lock(globalPrintMutex);
-            std::cout << "Total execution elapsed time: " << elapsed.count() << " seconds\n";
-        }
-    }
-
     return 0;
 }

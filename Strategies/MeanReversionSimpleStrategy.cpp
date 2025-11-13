@@ -46,12 +46,6 @@ void MeanReversionSimple::onTick(const Tick& tick) {
 		// Record entry price and mark that we're in a position
 		entryPrice = tick.price;
 		inPosition = true;
-		
-		// Thread-safe console output
-		{
-			std::lock_guard<std::mutex> lock(globalPrintMutex);
-			std::cout << "[MEAN REVERSION BUY] @ " << tick.price << "\n";
-		}
 	}
 	// SELL SIGNAL: Price rose 0.5% from entry price (take profit)
 	// Only sell if we're in a position
@@ -68,12 +62,6 @@ void MeanReversionSimple::onTick(const Tick& tick) {
 		
 		// Mark that we're no longer in a position
 		inPosition = false;
-		
-		// Thread-safe console output
-		{
-			std::lock_guard<std::mutex> lock(globalPrintMutex);
-			std::cout << "[MEAN REVERSION SELL] @ " << tick.price << "\n";
-		}
 	}
 
 	// Always update lastPrice for next tick comparison
