@@ -42,10 +42,14 @@ def run_backtest():
         
         # Run Docker container to execute backtest
         # CSV files will be generated in temp_results directory, not in project results/
+        # Pass parameters via environment variables so C++ code can read them
         cmd = [
             'docker', 'run', '--rm',
             '-v', f'{temp_results_dir.absolute()}:/app/temp_results',
             '-w', '/app',
+            '-e', f'NUM_TICKS={num_ticks}',
+            '-e', f'INITIAL_CAPITAL={initial_capital}',
+            '-e', 'WEB_INTERFACE=1',  # Disable verbose console output
             'backtest-engine',
             'sh', '-c',
             './build/BacktestEngine && (mv *.csv temp_results/ 2>/dev/null || true)'
