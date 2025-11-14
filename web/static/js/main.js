@@ -99,7 +99,9 @@ function createStrategyCard(strategy, result) {
     const stats = result.statistics;
     const finalPnL = stats.FinalPnL || (stats.TotalReturn ? 10000 * (1 + stats.TotalReturn) : 10000);
     const totalReturn = stats.TotalReturn || 0;
+    const meanReturn = stats.MeanReturn || 0;
     const sharpe = stats.Sharpe || 0;
+    const sortino = stats.Sortino || 0;
     const maxDrawdown = stats.MaxDrawdown || 0;
     const volatility = stats.AnnualizedVolatility || 0;
     
@@ -133,11 +135,19 @@ function createStrategyCard(strategy, result) {
                     <div class="d-flex flex-wrap gap-2">
                         <span class="metric-badge ${totalReturn >= 0 ? 'metric-positive' : 'metric-negative'}">
                             <i class="bi bi-arrow-${totalReturn >= 0 ? 'up' : 'down'}-right me-1"></i>
-                            Return: ${(totalReturn * 100).toFixed(2)}%
+                            Total Return: ${(totalReturn * 100).toFixed(2)}%
+                        </span>
+                        <span class="metric-badge ${meanReturn >= 0 ? 'metric-positive' : 'metric-negative'}">
+                            <i class="bi bi-graph-up me-1"></i>
+                            Mean Return: ${(meanReturn * 100).toFixed(2)}%
                         </span>
                         <span class="metric-badge ${sharpe > 1 ? 'metric-positive' : sharpe > 0 ? 'metric-neutral' : 'metric-negative'}">
                             <i class="bi bi-speedometer2 me-1"></i>
                             Sharpe: ${sharpe.toFixed(2)}
+                        </span>
+                        <span class="metric-badge ${sortino > 1 ? 'metric-positive' : sortino > 0 ? 'metric-neutral' : 'metric-negative'}">
+                            <i class="bi bi-speedometer me-1"></i>
+                            Sortino: ${sortino.toFixed(2)}
                         </span>
                         <span class="metric-badge metric-negative">
                             <i class="bi bi-arrow-down me-1"></i>
@@ -146,7 +156,7 @@ function createStrategyCard(strategy, result) {
                         ${volatility > 0 ? `
                             <span class="metric-badge metric-neutral">
                                 <i class="bi bi-activity me-1"></i>
-                                Vol: ${(volatility * 100).toFixed(2)}%
+                                Volatility: ${(volatility * 100).toFixed(2)}%
                             </span>
                         ` : ''}
                     </div>
